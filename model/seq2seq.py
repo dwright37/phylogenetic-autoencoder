@@ -3,6 +3,18 @@ from tensorflow.python.layers import core as layers_core
 from model.rnn import ConditionalGRUCell, ConditionalGRUState
 
 def gru(input_seq, input_seq_len, gru_dim, batch_size=None, keep_prob=1.0, scope="gru"):
+    """
+    Defines a GRU and returns the final state
+
+    input_seq (Tensor):         The input sequence to encode
+    input_seq_len (Tensor):     The lengths of each sequence in the batch
+    gru_dim (int):              The dimensionality of the GRU
+    batch_size (Tensor):        The input batch size
+    keep_prob (float):          Dropout keep probability
+    scope (string):             The name of the variable scope
+
+    Returns: A tensor with the final hidden state
+    """
     with tf.variable_scope(scope):
         cell = tf.contrib.rnn.GRUCell(gru_dim)
 
@@ -14,6 +26,18 @@ def gru(input_seq, input_seq_len, gru_dim, batch_size=None, keep_prob=1.0, scope
     return encoder_state
 
 def lstm(input_seq, input_seq_len, lstm_dim, batch_size=None, keep_prob=1.0, scope="bilstm"):
+    """
+    Defines a LSTM and returns the final state
+
+    input_seq (Tensor):         The input sequence to encode
+    input_seq_len (Tensor):     The lengths of each sequence in the batch
+    lstm_dim (int):             The dimensionality of the LSTM
+    batch_size (Tensor):        The input batch size
+    keep_prob (float):          Dropout keep probability
+    scope (string):             The name of the variable scope
+
+    Returns: A tensor with the final hidden state
+    """
     with tf.variable_scope(scope):
         cell = tf.contrib.rnn.BasicLSTMCell(lstm_dim)
 
@@ -25,6 +49,18 @@ def lstm(input_seq, input_seq_len, lstm_dim, batch_size=None, keep_prob=1.0, sco
     return encoder_state
 
 def bilstm(input_seq, input_seq_len, lstm_dim, batch_size=None, keep_prob=1.0):
+    """
+    Defines a Bidirectional LSTM and returns the final state
+
+    input_seq (Tensor):         The input sequence to encode
+    input_seq_len (Tensor):     The lengths of each sequence in the batch
+    lstm_dim (int):             The dimensionality of the LSTM
+    batch_size (Tensor):        The input batch size
+    keep_prob (float):          Dropout keep probability
+    scope (string):             The name of the variable scope
+
+    Returns: A tensor with the final hidden state
+    """
     with tf.variable_scope("bilstm"):
         cell_fw = tf.contrib.rnn.BasicLSTMCell(lstm_dim)
         cell_bw = tf.contrib.rnn.BasicLSTMCell(lstm_dim)
@@ -44,23 +80,35 @@ def basic_seq2seq(encoder_in, encoder_lens, decoder_in, decoder_lens, lstm_type=
                         vocab_size=100000, lstm_dim=125, keep_prob=1.0, batch_size=None,
                         l2reg=0.001, inference=False, target_sos_id=0, target_eos_id=0, 
                         max_iterations=20):
+    """
+    Defines a basic seq2seq model
+
+    encoder_in (Tensor):        The input sequences to the encoder
+    encoder_lens (Tensor):      The length of each encoder input sequence
+    decoder_in (Tensor):        The input sequences to the decoder
+    decoder_lens (Tensor):      The length of each decoder input sequence
+    lstm_type (string):         The type of encoder to use. Valid types are "fw_lstm", "bilstm", and "gru"
+    vocab_size (int):           The number of tokens in the vocabulary
+    lstm_dim (int):             The RNN hidden state size (both encoder and decoder)
+    keep_prob (float):          The dropout keep probability
+    batch_size (Tensor):        Number of input sequences
+    l2reg (float):              L2 regularization parameter
+    inference (bool):           True during test time, False for training
+    target_sos_id (int):        Id for start of sequence token (inference only)
+    target_eos_id (int):        Id for end of sequence token (inference only)
+    max_iterations (int):       Maximum number of symbols to generate (inference only)
+
+    Returns: The logits and decoder output for inference
+    """
+
     #Load the embeddings
     with tf.variable_scope("embeddings"):
         #Trying just one-hot at first
         enc_emb = tf.one_hot(encoder_in, vocab_size)
         dec_emb = tf.one_hot(decoder_in, vocab_size)
-    #    with tf.device("/cpu:0"):
-    #        embedding_var = tf.get_variable("embeddings", 
-    #                                         [vocab_size, embedding_dim], 
-    #                                         initializer=tf.constant_initializer(embedding_init),
-    #                                         regularizer=tf.contrib.layers.l2_regularizer(l2reg),
-    #                                         dtype=tf.float32)
-    #        
-    #        enc_emb = tf.nn.embedding_lookup(embedding_var, encoder_in)
-    #        if not inference:
-    #            dec_emb = tf.nn.embedding_lookup(embedding_var, decoder_in)
             
     with tf.name_scope("encoder"):
+        #Get the encoder hidden state
         if lstm_type in 'fw_lstm':
             encoder_state = lstm(enc_emb, encoder_lens, lstm_dim, batch_size=batch_size, keep_prob=keep_prob, scope="lstm")
             #encoder_state = tf.contrib.rnn.LSTMStateTuple(c=tf.zeros((batch_size, lstm_dim)), h=encoder_state[1]) 

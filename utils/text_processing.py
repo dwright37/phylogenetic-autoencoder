@@ -131,11 +131,6 @@ def label_tokens_in_spans(text, spans, in_label="D", out_label="I", label_scheme
 
     return labeled
 
-def collect_abstracts(filename):
-    with open(filename) as f:
-        abstracts = [" ".join(l.split('\t')[1:]).strip() for l in f]
-    return abstracts
-
 def load_dict_from_vocab_file(filename):
     """
     Creates a dictionary from a vocabulary file
