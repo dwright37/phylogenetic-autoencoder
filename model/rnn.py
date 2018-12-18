@@ -4,6 +4,7 @@ from tensorflow.python.ops import init_ops
 from tensorflow.python.ops import variable_scope as vs
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
+from tensorflow.contrib.rnn.python.ops import core_rnn_cell
 from tensorflow.python.ops import rnn_cell_impl
 import collections
 
@@ -56,7 +57,7 @@ class ConditionalGRUCell(rnn_cell_impl.RNNCell):
         if self._bias_initializer is None:
             bias_ones = init_ops.constant_initializer(1.0, dtype=inputs.dtype)
         with vs.variable_scope('gates'):
-            val_concat = rnn_cell_impl._linear(
+            val_concat = core_rnn_cell._linear(
                                 [inputs, h, c], 
                                 2*self._num_units,
                                 bias=False,
@@ -69,7 +70,7 @@ class ConditionalGRUCell(rnn_cell_impl.RNNCell):
         r_state = r * h
 
         with vs.variable_scope('candidate'):
-            hbar_out = rnn_cell_impl._linear(
+            hbar_out = core_rnn_cell._linear(
                                     [inputs, r_state, c],
                                     self._num_units,
                                     bias=False,
