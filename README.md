@@ -16,4 +16,17 @@ First, each character in a sequence is embedded to a one-hot encoding. With four
 Make sure to run the cells in preprocess\_corpus.ipynb to generate the data which is fed into the models.
 
 ## Visualization
+All points are colored by {kingdom, phylum, class}
+
+### t-SNE plots for different levels in the phylogenetic tree
+d = 2, lr = 10, perplexity = 23, iters = 5000
+
+#### Kingdom
+![](./results/tSNE_2D_Kingdom_perplexity23_lr10_iterations5000.png)
+
+#### Phylum
+![](./results/tSNE_2D_Phylum_perplexity23_lr10_iterations5000.png)
+
+#### Class
+![](./results/tSNE_2D_Class_perplexity23_lr10_iterations5000.png)
 
